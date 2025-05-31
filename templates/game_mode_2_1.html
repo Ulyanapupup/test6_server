@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Режим 2.1 (Красный)</title>
+  <style>body { background-color: red; color: white; }</style>
+</head>
+<body>
+  <h1>Режим 2.1 (Красный)</h1>
+  <p>Здесь будет ваша игра.</p>
+  <button onclick="window.location.href='/game?room={{ room }}'">Покинуть игру</button>
+
+  <!-- Передаём данные в window для доступа из внешнего JS -->
+  <script>
+    window.session_id = "{{ session_id }}";
+    window.room = "{{ room }}";
+  </script>
+
+  <!-- Подключение socket.io -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+  <!-- Подключение внешнего JS-файла -->
+  <script src="{{ url_for('static', filename='script_2_1.js') }}"></script>
+
+</body>
+</html>
