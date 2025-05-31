@@ -7,8 +7,18 @@
 <body>
   <h1>Режим 2.1 (Красный)</h1>
   <p>Здесь будет ваша игра.</p>
+  
+  <div id="role-selection">
+	  <h3>Выберите роль:</h3>
+	  <button id="role-guesser" onclick="chooseRole('guesser')">Угадывающий</button>
+	  <button id="role-creator" onclick="chooseRole('creator')">Отгадывающий</button>
+	</div>
+	
+	<button id="start-game" disabled onclick="startGame()">Играть</button>
+  
   <button onclick="window.location.href='/game?room={{ room }}'">Покинуть игру</button>
 
+  
   <!-- Передаём данные в window для доступа из внешнего JS -->
   <script>
     window.session_id = "{{ session_id }}";

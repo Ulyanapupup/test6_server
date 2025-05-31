@@ -18,14 +18,13 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 games = {}  # хранилище активных игр для режима 1.2: {game_id: Game}
 
-# Хранилище комнат для сетевой игры режимов 2.1 и 2.2
-rooms = {}
-# Формат rooms:
+# Добавим поле для хранения выбранных ролей в каждой комнате
 # rooms = {
 #   'ROOMCODE': {
 #       'players': set(session_ids),
 #       'creator': session_id,
-#       'mode': None  # '2.1' или '2.2' после выбора
+#       'mode': None,
+#       'roles': {session_id: 'угадывающий' / 'отгадывающий'}
 #   }
 # }
 
@@ -154,30 +153,81 @@ def on_join(data):
     room = data['room']
     session_id = data['session_id']
 
-    # Проверяем есть ли комната, если нет — создаём с этим игроком как создателем
     if room not in rooms:
         rooms[room] = {
             'players': set(),
             'creator': session_id,
-            'mode': None
+            'mode': None,
+            'roles': {}
         }
-
     players = rooms[room]['players']
+    roles = rooms[room]['roles']
 
-    # Проверяем, если в комнате уже 2 игрока и текущий игрок не в списке — не пускаем
     if len(players) >= 2 and session_id not in players:
         emit('error', {'message': 'Комната заполнена, вход запрещен.'})
         return
 
-    # Если всё ок, добавляем игрока в комнату и присоединяем socket.io к комнате
     join_room(room)
     players.add(session_id)
 
     # Отправляем обновление количества игроков всем в комнате
     emit('update_player_count', {'count': len(players)}, room=room)
 
-    # Можно отправить подтверждение подключившемуся
+    # При подключении отправляем текущее состояние ролей
+    # Чтобы клиент знал, какие роли заняты
+    emit('roles_update', {'roles': roles}, room=room)
+
     emit('joined', {'message': f'Вы подключились к комнате {room}.'})
+
+@socketio.on('choose_role')
+def on_choose_role(data):
+    room = data['room']
+    session_id = data['session_id']
+    chosen_role = data['role']  # Ожидаем 'угадывающий' или 'отгадывающий'
+
+    if room not in rooms:
+        emit('error', {'message': 'Комната не найдена'})
+        return
+
+    roles = rooms[room].setdefault('roles', {})
+
+    # Проверяем, занята ли уже эта роль кем-то другим
+    if chosen_role in roles.values():
+        emit('role_chosen_response', {'success': False, 'message': f'Роль "{chosen_role}" уже занята.'})
+        return
+
+    # Сохраняем роль за игроком
+    roles[session_id] = chosen_role
+
+    # Оповещаем всех в комнате об обновлении ролей
+    emit('roles_update', {'roles': roles}, room=room)
+
+    emit('role_chosen_response', {'success': True, 'role': chosen_role})
+    
+@socketio.on('start_game')
+def on_start_game(data):
+    room = data['room']
+
+    if room not in rooms:
+        emit('error', {'message': 'Комната не найдена'})
+        return
+
+    roles = rooms[room].get('roles', {})
+
+    # Проверяем, что в комнате 2 игрока и обе роли выбраны и разные
+    if len(roles) < 2:
+        emit('start_game_response', {'success': False, 'message': 'Ожидается выбор ролей обоими игроками.'})
+        return
+
+    chosen_roles = set(roles.values())
+    if chosen_roles != {'угадывающий', 'отгадывающий'}:
+        emit('start_game_response', {'success': False, 'message': 'Роли должны быть разными.'})
+        return
+
+    # Для теста выводим в консоль
+    print(f"Игра в комнате {room} началась! Роли: {roles}")
+
+    emit('start_game_response', {'success': True, 'message': 'Игра началась!'}, room=room)
 
 @app.route('/game_mode_2_1')
 def game_mode_2_1():
