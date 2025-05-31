@@ -128,23 +128,26 @@ def game():
     if not room:
         return redirect(url_for('room_setup'))
 
+    # Проверка session_id
+    if 'session_id' not in session:
+        print("Session ID отсутствует!")
+        session['session_id'] = generate_session_id()
+
     session_id = session['session_id']
+    print(f"Session ID: {session_id}, Room: {room}")
 
     if room not in rooms:
-        # Создаём новую комнату, первый игрок - создатель
         rooms[room] = {
             'players': set(),
             'creator': session_id,
             'mode': None
         }
-    # Добавляем игрока в комнату, если его там нет
     rooms[room]['players'].add(session_id)
 
     player_count = len(rooms[room]['players'])
     is_creator = (session_id == rooms[room]['creator'])
 
     return render_template('game.html', room=room, player_count=player_count, is_creator=is_creator)
-
 
 # WebSocket обработчики
 
