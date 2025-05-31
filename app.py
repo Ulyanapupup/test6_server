@@ -34,7 +34,12 @@ def generate_session_id():
 @app.before_request
 def make_session_permanent():
     if 'session_id' not in session:
-        session['session_id'] = generate_session_id()
+        new_id = generate_session_id()
+        session['session_id'] = new_id
+        print(f'Создан новый session_id: {new_id}')
+    else:
+        print(f'Существующий session_id: {session["session_id"]}')
+
 
 # --- Маршруты ---
 
@@ -125,27 +130,32 @@ def ask():
 @app.route('/game')
 def game():
     room = request.args.get('room', '').upper()
+    print(f"Запрос /game с комнатой: '{room}'")
     if not room:
+        print("Комната не указана, редирект на /room_setup")
         return redirect(url_for('room_setup'))
 
-    # Проверка session_id
     if 'session_id' not in session:
-        print("Session ID отсутствует!")
-        session['session_id'] = generate_session_id()
+        new_id = generate_session_id()
+        session['session_id'] = new_id
+        print(f'Создан новый session_id: {new_id}')
 
     session_id = session['session_id']
-    print(f"Session ID: {session_id}, Room: {room}")
+    print(f"Используем session_id: {session_id}")
 
     if room not in rooms:
+        print(f"Создаем новую комнату: {room}")
         rooms[room] = {
             'players': set(),
             'creator': session_id,
             'mode': None
         }
-    rooms[room]['players'].add(session_id)
 
+    rooms[room]['players'].add(session_id)
     player_count = len(rooms[room]['players'])
     is_creator = (session_id == rooms[room]['creator'])
+
+    print(f"Комната {room}, игроков: {player_count}, is_creator: {is_creator}")
 
     return render_template('game.html', room=room, player_count=player_count, is_creator=is_creator)
 
