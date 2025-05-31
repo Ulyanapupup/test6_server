@@ -19,7 +19,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 games = {}  # хранилище активных игр для режима 1.2: {game_id: Game}
 
 # Добавим поле для хранения выбранных ролей в каждой комнате
-# rooms = {
+rooms = {
 #   'ROOMCODE': {
 #       'players': set(session_ids),
 #       'creator': session_id,
