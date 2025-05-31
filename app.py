@@ -258,13 +258,16 @@ def game_mode_2_2():
     return render_template('game_mode_2_2.html', room=room)
 
 @socketio.on('choose_mode')
-def on_choose_mode(data):
+def handle_choose_mode(data):
     room = data['room']
     mode = data['mode']
-
+    
+    # Сохраним выбранный режим, если нужно
     if room in rooms:
         rooms[room]['mode'] = mode
-        emit('mode_chosen', {'room': room, 'mode': mode}, room=room)
+
+    # Отправим всем в комнате событие, кроме отправителя
+    emit('mode_chosen', {'room': room, 'mode': mode}, to=room, include_self=False)
 
 
 @socketio.on('disconnect')

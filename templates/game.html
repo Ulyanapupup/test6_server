@@ -11,8 +11,8 @@
 
   {% if is_creator %}
   <h2>Выберите режим игры</h2>
-  <button onclick="window.location.href='/game_mode_2_1?room={{ room }}'">Режим 2.1 (красный)</button>
-  <button onclick="window.location.href='/game_mode_2_2?room={{ room }}'">Режим 2.2 (зеленый)</button>
+  <button onclick="chooseMode('2.1')">Режим 2.1 (красный)</button>
+  <button onclick="chooseMode('2.2')">Режим 2.2 (зеленый)</button>
 
   {% else %}
   <p>Ожидаем выбор режима создателем комнаты...</p>

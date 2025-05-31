@@ -34,7 +34,14 @@ socket.on('error', (data) => {
 function chooseMode(mode) {
   if (isCreator) {
     socket.emit('choose_mode', { room: roomCode, mode: mode });
+    // Переход для создателя
+    if (mode === '2.1') {
+      window.location.href = '/game_mode_2_1?room=' + roomCode;
+    } else if (mode === '2.2') {
+      window.location.href = '/game_mode_2_2?room=' + roomCode;
+    }
   } else {
     alert("Только создатель комнаты может выбрать режим.");
   }
 }
+
