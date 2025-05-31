@@ -45,3 +45,11 @@ function chooseMode(mode) {
   }
 }
 
+document.querySelectorAll("button[data-mode]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const mode = btn.getAttribute("data-mode");
+    chooseMode(mode);
+  });
+});
+
+
