@@ -179,20 +179,20 @@ def on_join(data):
     roles = rooms[room]['roles']
 
     if len(players) >= 2 and session_id not in players:
-        emit('error', {'message': 'Комната заполнена, вход запрещен.'})
+        emit('error', {'message': 'Комната заполнена, вход запрещен.'}, to=request.sid)
         return
 
     join_room(room)
     players.add(session_id)
 
-    # Отправляем обновление количества игроков всем в комнате
-    emit('update_player_count', {'count': len(players)}, room=room)
+    # Обновляем количество игроков всем
+    emit('update_player_count', {'count': len(players)}, to=room)
 
-    # При подключении отправляем текущее состояние ролей
-    # Чтобы клиент знал, какие роли заняты
-    emit('roles_update', {'roles': roles}, room=room)
+    # Отправляем текущие роли всем
+    emit('roles_update', {'roles': roles}, to=room)
 
-    emit('joined', {'message': f'Вы подключились к комнате {room}.'})
+    # Приветствие — только подключившемуся
+    emit('joined', {'message': f'Вы подключились к комнате {room}.'}, to=request.sid)
 
 @socketio.on('choose_role')
 def on_choose_role(data):
@@ -267,7 +267,7 @@ def handle_choose_mode(data):
         rooms[room]['mode'] = mode
 
     # Отправим всем в комнате событие, кроме отправителя
-    emit('mode_chosen', {'room': room, 'mode': mode}, to=room, include_self=False)
+    emit('mode_chosen', {'room': room, 'mode': mode}, to=room)
 
 
 @socketio.on('disconnect')

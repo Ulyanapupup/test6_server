@@ -13,15 +13,15 @@ socket.on('joined', (data) => {
 
 socket.on('update_player_count', (data) => {
   console.log(`Игроков в комнате: ${data.count}`);
-  document.getElementById('playerCount').innerText = `Игроков в комнате: ${data.count}`;
+  document.getElementById('playerCount').textContent = data.count;
 });
 
 socket.on('mode_chosen', (data) => {
   if (data.room === roomCode) {
     if (data.mode === '2.1') {
-      window.location.href = '/game_mode_2_1';
+      window.location.href = '/game_mode_2_1?room=${roomCode}`;
     } else if (data.mode === '2.2') {
-      window.location.href = '/game_mode_2_2';
+      window.location.href = '/game_mode_2_2?room=${roomCode}`;
     }
   }
 });
